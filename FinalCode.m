@@ -1,7 +1,7 @@
 % functionSynapseandflux
 %Parameters
-L=0.02; %µm
-tfinal=1e-7; %seconds
+L=40*10^-3; %µm
+tfinal=4e-7; %seconds
 D=400; %µm^2/s
 tpoints=501;
 xpoints=41;
@@ -26,13 +26,6 @@ plot(t,Flux*6.022e23)
 xlabel('Time (seconds)')
 ylabel('Bound Receptor Surface Concentration (molecules/µm^2)')
 title('ACh Bound at Post-Synaptic Membrane')
-%Create 3d plot
-figure
-surf(x,t,C,'Edgecolor','None')
-title('AChConc in the Synaptic Cleft')
-xlabel('Distance (µm)')
-ylabel('Time (seconds)')
-zlabel('Concentration (mol/m^3)')
 
 %PDE function (define our PDE)
 function [c,f,s] = pdex1pde(x,t,Conc,DCDx)
