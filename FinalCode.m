@@ -1,4 +1,4 @@
-clc,clear, close all
+clc,clear,
 % BME4409 Final Project
 % Dr. Ferrall-Fairbanks
 % Members: Vanessea Cruz, Jeffrey Chen, Estefania Hernandez, Patrick Kennedy
@@ -6,7 +6,7 @@ clc,clear, close all
 
 %Parameters
 L=40*10^-3; %Cleft distance µm 
-tfinal=4e-7; %seconds. For graph
+tfinal=2e-7; %seconds. For graph
 D=400; %ACh difusivity in NMJ µm^2/s
 tpoints=501;
 xpoints=41;
@@ -18,27 +18,39 @@ m = 0;
 x = linspace(0,L,xpoints);
 t = linspace(0,tfinal,tpoints);
 
-%Call pdepe to solve the equation
-sol = pdepe(m,@pdex1pde,@pdex1ic,@pdex1bc,x,t);
-%Solution is first component of sol
-C = sol(:,:,1);
-%Estimating flux at boundary
-Flux=zeros(1,length(t));
-for i=2:tpoints
-dFlux=-D*((C(i,41)-C(i,40))/(L/xpoints))*(tfinal/tpoints);
-Flux(i)=Flux(i-1)+dFlux;
+%Maximum bound receptor surface concentration
+BRSCmax = zeros(10,1);
+for j = 1:10
+    global ALS
+    ALS = j; %y being severity of ALS scale (1-10); with 1 being normal
+
+    %Call pdepe to solve the equation
+    sol = pdepe(m,@pdex1pde,@pdex1ic,@pdex1bc,x,t);
+    %Solution is first component of sol
+    C = sol(:,:,1);
+    %Estimating flux at boundary
+    Flux=zeros(1,length(t));
+    for i=2:tpoints
+    dFlux=-D*((C(i,41)-C(i,40))/(L/xpoints))*(tfinal/tpoints);
+    Flux(i)=Flux(i-1)+dFlux;
+    end
+    %Bound Receptor surface concentration
+    BRSC = Flux*6.022e23;
+    BRSCmax(j) = max(BRSC);
+    
+    %Plotting BRSC vs time
+    figure
+    plot(t,BRSC)
+    xlabel('Time (seconds)')
+    ylabel('Bound Receptor Surface Concentration (molecules/µm^2)')
+    title('ACh Bound at Post-Synaptic Membrane')
 end
-%Bound Receptor surface concentration
-BRSC = Flux*6.022e23;
-BRSCmax = max(BRSC);
 
-%Plotting BRSC vs time
-figure
-plot(t,BRSC)
-xlabel('Time (seconds)')
-ylabel('Bound Receptor Surface Concentration (molecules/µm^2)')
-title('ACh Bound at Post-Synaptic Membrane')
-
+%Plotting BRSCmax vs ALS
+plot(BRSCmax,1:10)
+xlabel('Severity of ALS (scale 1-10')
+ylabel('Max Bound Receptor Surface Concentration (molecules/µm^2)')
+title('ALS effect on Bound Nicotinic Receptors on Motor End Plate')
 
 %PDE function (define our PDE)
 function [c,f,s] = pdex1pde(x,t,Conc,DCDx)
@@ -57,7 +69,8 @@ end
 %IC function
 function C0 = pdex1ic(x)
 L=0.02;
-Cs=6e-13; %mol/µm^2, concentration pulse into synapse
+global ALS
+Cs=(1/ALS^3)*6e-6; %mol/µm^2, concentration pulse into synapse
 %Delta function initial condition, concentration is Cs at x=0 and 0
 %elsewhere
 if x==0
