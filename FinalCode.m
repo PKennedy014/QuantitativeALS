@@ -1,7 +1,7 @@
 clc,clear,
 % BME4409 Final Project
 % Dr. Ferrall-Fairbanks
-% Members: Vanessea Cruz, Jeffrey Chen, Estefania Hernandez, Patrick Kennedy
+% Members: Jeffrey Chen, Vanessea Cruz, Estefania Hernandez, Patrick Kennedy
 %Modeling the effect of ALS on muscle contraction
 
 %Parameters
@@ -38,19 +38,36 @@ for j = 1:10
     BRSC = Flux*6.022e23;
     BRSCmax(j) = max(BRSC);
     
-    %Plotting BRSC vs time
-    figure
-    plot(t,BRSC)
-    xlabel('Time (seconds)')
-    ylabel('Bound Receptor Surface Concentration (molecules/µm^2)')
-    title('ACh Bound at Post-Synaptic Membrane')
+%     %Plotting BRSC vs time
+%     figure
+%     plot(t,BRSC)
+%     xlabel('Time (seconds)')
+%     ylabel('Bound Receptor Surface Concentration (molecules/µm^2)')
+%     title('ACh Bound at Post-Synaptic Membrane')
 end
 
 %Plotting BRSCmax vs ALS
-plot(BRSCmax,1:10)
-xlabel('Severity of ALS (scale 1-10')
+subplot(1,2,1)
+bar(1:10, BRSCmax)
+xlabel('Severity of ALS (scale 1-10)')
 ylabel('Max Bound Receptor Surface Concentration (molecules/µm^2)')
-title('ALS effect on Bound Nicotinic Receptors on Motor End Plate')
+title('ALS Effect on Bound Nicotinic Receptors on Motor End Plate')
+
+%Plotting BRSCmax vs. % muscle contraction
+BRSCmaxSmooth = (0:0.01:max(BRSCmax));
+MusCon = 100./(1+exp(-(BRSCmaxSmooth-35)./4));
+subplot(1,2,2)
+plot(BRSCmaxSmooth,MusCon)
+xlabel('Max Bound Receptor Surface Concentration (molecules/µm^2)')
+ylabel('% Muscle contraction')
+title('Bound Nicotinic Receptors on Motor End Plate vs. %Contraction')
+
+%Plotting % muscle contraction vs. ALS
+figure; MusCon2 = 100./(1+exp(-(BRSCmax-35)./4));
+plot(1:10,MusCon2)
+title('ALS Effect on Muscle Contraction')
+xlabel('Severity of ALS (scale 1-10)')
+ylabel('% Muscle contraction')
 
 %PDE function (define our PDE)
 function [c,f,s] = pdex1pde(x,t,Conc,DCDx)
@@ -70,7 +87,7 @@ end
 function C0 = pdex1ic(x)
 L=0.02;
 global ALS
-Cs=(1/ALS^3)*6e-6; %mol/µm^2, concentration pulse into synapse
+Cs=(1/ALS)*6e-6; %mol/µm^2, concentration pulse into synapse
 %Delta function initial condition, concentration is Cs at x=0 and 0
 %elsewhere
 if x==0
@@ -83,7 +100,8 @@ end
 %BC function
 function [pl,ql,pr,qr] = pdex1bc(xl,ul,xr,ur,t)
 D=400; %µm^2/s;
-beta=4.7e22; %µm^3/mol*s Receptor binding rate
+global ALS
+beta=(1/ALS)*4.7e22; %µm^3/mol*s Receptor binding rate
 %dCdX=0 at x=0
 pl = 0;
 ql = 1;
