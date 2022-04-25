@@ -37,16 +37,22 @@ for j = 1:10
     %Bound Receptor surface concentration
     BRSC = Flux*6.022e23;
     BRSCmax(j) = max(BRSC);
-    
-%     %Plotting BRSC vs time
-%     figure
-%     plot(t,BRSC)
-%     xlabel('Time (seconds)')
-%     ylabel('Bound Receptor Surface Concentration (molecules/µm^2)')
-%     title('ACh Bound at Post-Synaptic Membrane')
 end
 
+%Plotting release ACh diffusivity
+figure(1);
+Cs_vec = zeros(10,1);
+for i = 1:10
+    Cs=(1/i)*6e-6;
+    Cs_vec(i) = Cs; 
+end
+bar(1:10, Cs_vec)
+xlabel('Severity of ALS (scale 1-10)')
+ylabel('Max Flux of ACh (molecules/µm^2)')
+title('ALS Effect on ACh release from Presynaptic Terminal')
+
 %Plotting BRSCmax vs ALS
+figure(2)
 subplot(1,2,1)
 bar(1:10, BRSCmax)
 xlabel('Severity of ALS (scale 1-10)')
@@ -63,7 +69,7 @@ ylabel('% Muscle contraction')
 title('Bound Nicotinic Receptors on Motor End Plate vs. %Contraction')
 
 %Plotting % muscle contraction vs. ALS
-figure; MusCon2 = 100./(1+exp(-(BRSCmax-35)./4));
+figure (3); MusCon2 = 100./(1+exp(-(BRSCmax-35)./4));
 plot(1:10,MusCon2)
 title('ALS Effect on Muscle Contraction')
 xlabel('Severity of ALS (scale 1-10)')
